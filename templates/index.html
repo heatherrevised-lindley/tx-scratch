@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% macro sortlink(key, label, hint='') %}
+  {% set q = request.args.to_dict() %}
+  {% set _ = q.update({'sort': key}) %}
+  <a href="{{ url_for('index', **q) }}">{{ label }}</a>
+  {% if hint %}<span class="hint">{{ hint }}</span>{% endif %}
+{% endmacro %}
+
+{% block body %}
+<header class="masthead">
+  <h1>Texas scratch-offs, late in the print run</h1>
+  <div class="meta">
+    Claims data through {{ snapshot_date }} · {{ snapshot_count }} snapshot{{ '' if snapshot_count == 1 else 's' }} stored
+  </div>
+</header>
+
+<p class="primer">
+  Two rankings, side by side. <strong>Big-prize index</strong> compares how densely prizes of
+  {{ big_threshold | money }} or more sit in the tickets still on shelves against how densely they
+  sat at launch, so anything above 1.00x means the good prizes are outrunning the sales.
+  <strong>Remaining ROI</strong> is the expected return on the tickets that are left. Sort by either,
+  or by the combined rank. Percent sold is estimated from prizes claimed, which lags actual sales.
+</p>
+
+<form class="controls" method="get" action="{{ url_for('index') }}">
+  <input type="hidden" name="sort" value="{{ sort_key }}">
+
+  <div class="field">
+    <label for="min_sold">Minimum percent sold</label>
+    <select id="min_sold" name="min_sold">
+      {% for v in [0, 25, 50, 60, 70, 80, 90] %}
+        <option value="{{ v }}" {{ 'selected' if min_sold == v }}>{{ v }}%</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="big">Count a prize as big at</label>
+    <select id="big" name="big">
+      {% for v in [100, 500, 1000, 5000, 10000, 50000, 100000] %}
+        <option value="{{ v }}" {{ 'selected' if big_threshold == v }}>${{ '{:,}'.format(v) }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="price">Ticket price</label>
+    <select id="price" name="price">
+      <option value="">Any</option>
+      {% for p in prices %}
+        <option value="{{ p }}" {{ 'selected' if price_filter == p|string }}>${{ p | int }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="checks">
+    <label><input type="checkbox" name="top_left" value="1" {{ 'checked' if only_top }}> Top prize still unclaimed</label>
+    <label><input type="checkbox" name="closed" value="1" {{ 'checked' if include_closed }}> Include closed games</label>
+  </div>
+
+  <button type="submit">Apply filters</button>
+</form>
+
+<form method="post" action="{{ url_for('do_refresh') }}" style="margin-bottom:16px">
+  <button class="ghost" type="submit" {{ 'disabled' if running }}>
+    {{ 'Pulling new data…' if running else 'Pull today’s data' }}
+  </button>
+</form>
+
+<p class="count">{{ rows | length }} of {{ total }} games match.</p>
+
+<div class="scroll">
+<table>
+  <thead>
+    <tr>
+      <th class="left">{{ sortlink('combined', 'Rank', 'combined') }}</th>
+      <th class="left">Game</th>
+      <th>{{ sortlink('price', 'Price') }}</th>
+      <th class="left">{{ sortlink('sold', 'Sold', 'estimated') }}</th>
+      <th>{{ sortlink('big', 'Big-prize index', 'vs launch') }}</th>
+      <th>{{ sortlink('ev', 'Remaining ROI', 'per ticket') }}</th>
+      <th>{{ sortlink('top_prize', 'Top prize') }}</th>
+      <th>{{ sortlink('top_left', 'Left', 'of top') }}</th>
+      <th>Top odds now</th>
+      <th>{{ sortlink('value_left', 'Prize value left') }}</th>
+      <th>Tickets left</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td class="rank">{{ r.rank_overall or '—' }}</td>
+      <td class="left">
+        <a class="name" href="{{ url_for('game_detail', game_number=r.game_number, big=big_threshold) }}">{{ r.game_name }}</a>
+        {% if r.closing_soon %}<span class="tag">closing</span>{% endif %}
+        {% if r.top_left == 0 %}<span class="tag out">top prize gone</span>{% endif %}
+        <span class="sub">Game {{ r.game_number }}{% if r.start_date %} · started {{ r.start_date }}{% endif %}</span>
+      </td>
+      <td>${{ r.price | int }}</td>
+      <td class="left sold {{ 'deep' if r.pct_sold >= 0.75 }}">
+        {{ r.pct_sold | pct(0) }}
+        <span class="bar"><i style="width: {{ (r.pct_sold * 100) | round(1) }}%"></i></span>
+      </td>
+      <td class="strong {{ 'pos' if r.big_index and r.big_index > 1.05 else ('neg' if r.big_index and r.big_index < 0.95 else '') }}">
+        {{ r.big_index | factor }}
+      </td>
+      <td class="{{ 'pos' if r.roi_now and r.roi_now > (r.roi_start or -1) else 'dim' }}">
+        {{ r.roi_now | pct }}
+      </td>
+      <td>{{ r.top_prize | money }}</td>
+      <td>{{ r.top_left }} of {{ r.top_printed }}</td>
+      <td class="dim">{{ r.top_odds_now | odds }}</td>
+      <td>{{ r.value_left | money }}</td>
+      <td class="dim">{{ r.tickets_left | num }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="11" class="left dim" style="padding:22px">No games match these filters. Loosen the minimum percent sold or clear the price filter.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<footer>
+  <p>Source: texaslottery.com prize-claim file, pulled whole. Percent sold and tickets left are
+  estimates derived from prizes claimed against prizes printed, since the lottery does not publish
+  tickets sold. Claims run behind sales, so late-run games read as less sold than they are.</p>
+  <p>Every active game carries a negative expected return. A high index means better than this game
+  used to be, not better than break-even.</p>
+</footer>
+{% endblock %}

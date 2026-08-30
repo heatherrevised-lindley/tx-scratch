@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#16181d">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Texas Scratch-Offs</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --paper:#e3e1dc; --card:#fff; --ink:#16181d; --soft:#5c6068;
+  --rule:#c8c5be; --rule2:#e6e4de; --latex:#a9adb2;
+  --good:#1f6f4a; --bad:#9b2c2c; --foil:#b8862b; --focus:#2d5bb9;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.45 "Inter","Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
+  font-variant-numeric:tabular-nums;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* Header ---------------------------------------------------------- */
+header{
+  position:sticky;top:0;z-index:20;background:var(--ink);color:#fff;
+  padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
+}
+.hrow{display:flex;align-items:baseline;gap:10px}
+h1{margin:0;font-size:17px;font-weight:620;letter-spacing:-.01em}
+.age{margin-left:auto;font-size:11.5px;color:#b6b9be;text-align:right;line-height:1.25}
+.age.stale{color:#f0c063}
+.search{
+  width:100%;margin-top:9px;padding:9px 11px;font:inherit;font-size:16px;
+  border:0;border-radius:7px;background:#2a2d34;color:#fff;
+}
+.search::placeholder{color:#8b8f96}
+
+/* Filters --------------------------------------------------------- */
+.chips{
+  display:flex;gap:6px;overflow-x:auto;padding:9px 14px;
+  background:var(--card);border-bottom:1px solid var(--rule);
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex:0 0 auto;font:inherit;font-size:13.5px;padding:5px 12px;border-radius:15px;
+  border:1px solid var(--rule);background:#fff;color:var(--ink);cursor:pointer;
+}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+.knobs{
+  display:flex;gap:8px;padding:9px 14px;background:var(--card);
+  border-bottom:1px solid var(--rule);
+}
+.knob{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.knob label{font-size:11px;color:var(--soft)}
+.knob select{
+  font:inherit;font-size:13.5px;padding:6px 4px;border:1px solid var(--rule);
+  border-radius:5px;background:#fff;color:var(--ink);width:100%;
+}
+
+.tally{padding:9px 14px 3px;font-size:12.5px;color:var(--soft)}
+
+/* Cards ------------------------------------------------------------ */
+.list{padding:6px 10px 30px}
+.card{
+  background:var(--card);border:1px solid var(--rule);border-radius:9px;
+  margin-bottom:8px;overflow:hidden;
+}
+.top{display:flex;gap:11px;padding:11px 12px;align-items:flex-start;cursor:pointer}
+.price{
+  flex:0 0 auto;min-width:40px;text-align:center;padding:4px 6px;border-radius:5px;
+  background:var(--ink);color:#fff;font-size:13px;font-weight:620;
+}
+.mid{flex:1;min-width:0}
+.nm{font-weight:600;font-size:15px;line-height:1.25;overflow-wrap:anywhere}
+.sub{font-size:11.5px;color:var(--soft);margin-top:1px}
+.idx{flex:0 0 auto;text-align:right}
+.idx b{display:block;font-size:19px;font-weight:640;letter-spacing:-.01em;line-height:1.1}
+.idx span{font-size:10.5px;color:var(--soft)}
+.pos{color:var(--good)} .neg{color:var(--bad)} .dim{color:var(--soft)}
+
+.bar{height:6px;background:var(--rule2);border-radius:3px;margin:9px 12px 0;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--latex)}
+.bar.deep i{background:var(--ink)}
+
+.facts{
+  display:flex;flex-wrap:wrap;gap:3px 14px;padding:7px 12px 11px;
+  font-size:12.5px;color:var(--soft);
+}
+.facts b{color:var(--ink);font-weight:600}
+
+.tag{
+  display:inline-block;font-size:10.5px;padding:0 5px;border-radius:3px;
+  border:1px solid var(--foil);color:var(--foil);margin-left:5px;vertical-align:1px;
+}
+.tag.out{border-color:var(--bad);color:var(--bad)}
+
+/* Expanded detail --------------------------------------------------- */
+.detail{border-top:1px solid var(--rule2);padding:12px;display:none}
+.card.open .detail{display:block}
+.detail h3{margin:0 0 7px;font-size:13px;font-weight:620}
+.detail h3+h3{margin-top:16px}
+.detail p{margin:0 0 10px;font-size:12.5px;color:var(--soft)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:right;font-weight:600;padding:4px 4px 6px;border-bottom:1px solid var(--ink);white-space:nowrap}
+th:first-child{text-align:left}
+td{text-align:right;padding:5px 4px;border-bottom:1px solid var(--rule2);white-space:nowrap}
+td:first-child{text-align:left;font-weight:600}
+tr.gone td{color:var(--bad)}
+svg.spark{width:100%;height:96px;display:block}
+.legend{display:flex;gap:12px;font-size:11px;color:var(--soft);margin-top:5px}
+.legend i{display:inline-block;width:9px;height:2.5px;vertical-align:2px;margin-right:4px}
+
+.none{padding:34px 16px;text-align:center;color:var(--soft);font-size:13.5px}
+footer{padding:4px 16px 26px;font-size:11.5px;color:var(--soft);line-height:1.5}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hrow">
+    <h1>Texas Scratch-Offs</h1>
+    <div class="age" id="age"></div>
+  </div>
+  <input class="search" id="q" type="search" placeholder="Search a game name or number"
+         autocomplete="off" autocorrect="off" spellcheck="false">
+</header>
+
+<div class="chips" id="prices"></div>
+
+<div class="knobs">
+  <div class="knob">
+    <label for="sort">Sort by</label>
+    <select id="sort">
+      <option value="combined">Combined rank</option>
+      <option value="big">Big-prize index</option>
+      <option value="roi">Remaining ROI</option>
+      <option value="sold">Percent sold</option>
+      <option value="topleft">Top prizes left</option>
+      <option value="topprize">Top prize size</option>
+    </select>
+  </div>
+  <div class="knob">
+    <label for="minsold">Min sold</label>
+    <select id="minsold">
+      <option value="0">Any</option>
+      <option value="25">25%</option>
+      <option value="50">50%</option>
+      <option value="60">60%</option>
+      <option value="70">70%</option>
+      <option value="80">80%</option>
+      <option value="90">90%</option>
+    </select>
+  </div>
+  <div class="knob">
+    <label for="big">Big prize at</label>
+    <select id="big">
+      <option value="100">$100</option>
+      <option value="500">$500</option>
+      <option value="1000" selected>$1,000</option>
+      <option value="5000">$5,000</option>
+      <option value="10000">$10,000</option>
+      <option value="50000">$50,000</option>
+      <option value="100000">$100,000</option>
+    </select>
+  </div>
+</div>
+
+<div class="tally" id="tally"></div>
+<div class="list" id="list"></div>
+
+<footer>
+  Percent sold is estimated from prizes claimed, which lags actual sales. Every game pays back
+  well under its ticket price; a high index means better than this game used to be, not better
+  than break-even.
+</footer>
+
+<script>
+const DATA = /*__DATA__*/null;
+
+const $ = id => document.getElementById(id);
+const state = {q:'', price:null, sort:'combined', minSold:0, big:1000, open:new Set()};
+
+/* Formatting ------------------------------------------------------- */
+const money = v => v==null ? '—'
+  : v>=1e6 ? '$'+(v/1e6).toFixed(v%1e6?1:0)+'M'
+  : v>=1e3 ? '$'+Math.round(v/1e3).toLocaleString()+'K'
+  : '$'+Math.round(v).toLocaleString();
+const pct = (v,d=0) => v==null ? '—' : (v*100).toFixed(d)+'%';
+const num = v => v==null ? '—' : Math.round(v).toLocaleString();
+const odds = v => v==null||!isFinite(v) ? '—' : '1 in '+Math.round(v).toLocaleString();
+
+/* Metrics, recomputed whenever the big-prize threshold changes ------ */
+function compute(g, thr){
+  const [printed, claimed] = g.T;
+  const soldPct = printed ? claimed/printed : 0;
+  const left = g.t * (1 - soldPct);
+  let valueLeft = 0, valueStart = 0, bigLeft = 0, bigPrinted = 0;
+  for (const [amt, p, c] of g.L){
+    valueStart += amt*p;
+    valueLeft  += amt*(p-c);
+    if (amt >= thr){ bigPrinted += p; bigLeft += p-c; }
+  }
+  const [topAmt, topP, topC] = g.L[0];
+  const topLeft = topP - topC;
+  const rateStart = bigPrinted/g.t, rateNow = left>0 ? bigLeft/left : null;
+  return {
+    soldPct, left, valueLeft, topAmt, topP, topLeft,
+    roiNow:   left>0 && g.p ? valueLeft/left/g.p - 1 : null,
+    roiStart: g.p ? valueStart/g.t/g.p - 1 : null,
+    bigLeft, bigIndex: rateStart>0 && rateNow!=null ? rateNow/rateStart : null,
+    topOddsStart: topP ? g.t/topP : null,
+    topOddsNow:   topLeft>0 && left>0 ? left/topLeft : null
+  };
+}
+
+function rankAll(rows){
+  const rank = (key, dest) => {
+    rows.filter(r => r.m[key]!=null)
+        .sort((a,b) => b.m[key]-a.m[key])
+        .forEach((r,i) => r[dest] = i+1);
+  };
+  rank('bigIndex','rBig'); rank('roiNow','rRoi');
+  rows.forEach(r => r.comb = (r.rBig && r.rRoi) ? (r.rBig+r.rRoi)/2 : Infinity);
+  // A game with no prizes at or above the threshold has no index, so it gets
+  // no combined rank rather than a made-up one. It still shows in the list.
+  rows.filter(r => isFinite(r.comb))
+      .sort((a,b) =>
+        a.comb - b.comb
+        || (b.m.bigIndex ?? 0) - (a.m.bigIndex ?? 0)
+        || a.g.n - b.g.n)
+      .forEach((r,i) => r.overall = i+1);
+}
+
+/* Sparkline -------------------------------------------------------- */
+function spark(h){
+  if (!h || h.d.length < 2) return '<p>Not enough snapshots yet. The chart fills in as you rebuild.</p>';
+  const W=320, H=96, PAD=6, n=h.d.length;
+  const line = (vals, color) => {
+    const ok = vals.filter(v=>v!=null);
+    if (ok.length < 2) return '';
+    const lo=Math.min(...ok), hi=Math.max(...ok), span=(hi-lo)||1;
+    const pts = vals.map((v,i)=> v==null ? null : [
+      PAD + i*(W-2*PAD)/(n-1),
+      H - PAD - (v-lo)/span*(H-2*PAD)
+    ]).filter(Boolean);
+    return `<polyline fill="none" stroke="${color}" stroke-width="2"
+      stroke-linejoin="round" stroke-linecap="round"
+      points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}"/>`;
+  };
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+      ${line(h.s,'#16181d')}${line(h.r,'#1f6f4a')}${line(h.b,'#b8862b')}
+    </svg>
+    <div class="legend">
+      <span><i style="background:#16181d"></i>sold</span>
+      <span><i style="background:#1f6f4a"></i>ROI</span>
+      <span><i style="background:#b8862b"></i>index</span>
+      <span style="margin-left:auto">${h.d[0]} to ${h.d[n-1]}</span>
+    </div>`;
+}
+
+/* Rendering -------------------------------------------------------- */
+function detailHTML(g, m){
+  const tiers = g.L.map(([amt,p,c]) => {
+    const left = p-c;
+    return `<tr class="${left?'':'gone'}"><td>${money(amt)}</td><td>${num(p)}</td>
+      <td>${num(left)}</td><td>${pct(p?left/p:0)}</td><td>${money(amt*left)}</td></tr>`;
+  }).join('');
+  const factor = m.topOddsStart && m.topOddsNow ? (m.topOddsStart/m.topOddsNow).toFixed(2)+'x' : '—';
+  return `<div class="detail">
+    <h3>Top prize</h3>
+    <p>${m.topLeft} of ${m.topP} ${money(m.topAmt)} prizes unclaimed.
+       Odds were ${odds(m.topOddsStart)} at launch, ${odds(m.topOddsNow)} on the tickets
+       estimated to be left. That is ${factor}.</p>
+    <h3>Prize tiers</h3>
+    <table><thead><tr><th>Prize</th><th>Printed</th><th>Left</th><th>Share</th><th>Value</th></tr></thead>
+    <tbody>${tiers}</tbody></table>
+    <h3>History</h3>${spark(g.H)}
+  </div>`;
+}
+
+function render(){
+  const thr = state.big;
+  let rows = DATA.games.map(g => ({g, m:compute(g, thr)}));
+  rankAll(rows);
+
+  const q = state.q.trim().toLowerCase();
+  rows = rows.filter(r =>
+    (!q || r.g.g.toLowerCase().includes(q) || String(r.g.n).includes(q)) &&
+    (state.price==null || r.g.p===state.price) &&
+    (r.m.soldPct*100 >= state.minSold)
+  );
+
+  const key = {
+    combined: r => isFinite(r.comb) ? -r.comb : -Infinity,
+    big:      r => r.m.bigIndex ?? -1e9,
+    roi:      r => r.m.roiNow ?? -1e9,
+    sold:     r => r.m.soldPct,
+    topleft:  r => r.m.topLeft,
+    topprize: r => r.m.topAmt
+  }[state.sort];
+  rows.sort((a,b) => key(b)-key(a));
+
+  $('tally').textContent =
+    `${rows.length} of ${DATA.games.length} games · big prize set at $${thr.toLocaleString()}`;
+
+  $('list').innerHTML = rows.length ? rows.map(r => {
+    const {g, m} = r;
+    const cls = m.bigIndex==null ? '' : m.bigIndex>1.05 ? 'pos' : m.bigIndex<0.95 ? 'neg' : '';
+    const roiCls = (m.roiNow!=null && m.roiStart!=null && m.roiNow>m.roiStart) ? 'pos' : 'dim';
+    return `<article class="card${state.open.has(g.n)?' open':''}" data-n="${g.n}">
+      <div class="top" role="button" tabindex="0" aria-expanded="${state.open.has(g.n)}">
+        <div class="price">$${g.p}</div>
+        <div class="mid">
+          <div class="nm">${g.g}${g.x?'<span class="tag">closing</span>':''}${
+            m.topLeft?'':'<span class="tag out">top gone</span>'}</div>
+          <div class="sub">Game ${g.n} · rank ${r.overall ? '#'+r.overall : '—'}</div>
+        </div>
+        <div class="idx"><b class="${cls}">${m.bigIndex!=null?m.bigIndex.toFixed(2)+'x':'—'}</b>
+          <span>big index</span></div>
+      </div>
+      <div class="bar${m.soldPct>=.75?' deep':''}"><i style="width:${(m.soldPct*100).toFixed(1)}%"></i></div>
+      <div class="facts">
+        <span><b>${pct(m.soldPct)}</b> sold</span>
+        <span>ROI <b class="${roiCls}">${pct(m.roiNow,1)}</b></span>
+        <span>Top <b>${money(m.topAmt)}</b>, ${m.topLeft} of ${m.topP} left</span>
+        <span>${money(m.valueLeft)} left</span>
+      </div>
+      ${state.open.has(g.n) ? detailHTML(g,m) : ''}
+    </article>`;
+  }).join('') : `<div class="none">No games match. Try clearing the price chip
+      or lowering the minimum sold.</div>`;
+}
+
+/* Wiring ----------------------------------------------------------- */
+function initPrices(){
+  const prices = [...new Set(DATA.games.map(g=>g.p))].sort((a,b)=>a-b);
+  $('prices').innerHTML =
+    `<button class="chip" data-p="" aria-pressed="true">All prices</button>` +
+    prices.map(p=>`<button class="chip" data-p="${p}" aria-pressed="false">$${p}</button>`).join('');
+  $('prices').addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    state.price = b.dataset.p === '' ? null : Number(b.dataset.p);
+    [...$('prices').children].forEach(c => c.setAttribute('aria-pressed', c===b));
+    render();
+  });
+}
+
+function initAge(){
+  const days = Math.floor((Date.now() - new Date(DATA.as_of+'T12:00:00')) / 864e5);
+  const el = $('age');
+  el.innerHTML = `claims ${DATA.as_of}<br>${
+    days<=0 ? 'today' : days===1 ? '1 day old' : days+' days old'}`;
+  if (days >= 3) el.classList.add('stale');
+}
+
+$('q').addEventListener('input', e => { state.q = e.target.value; render(); });
+['sort','minsold','big'].forEach(id => $(id).addEventListener('change', e => {
+  state[{sort:'sort', minsold:'minSold', big:'big'}[id]] =
+    id==='sort' ? e.target.value : Number(e.target.value);
+  render();
+}));
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('.top'); if (!t) return;
+  const n = Number(t.closest('.card').dataset.n);
+  state.open.has(n) ? state.open.delete(n) : state.open.add(n);
+  render();
+});
+document.addEventListener('keydown', e => {
+  if ((e.key==='Enter'||e.key===' ') && e.target.classList.contains('top')){
+    e.preventDefault(); e.target.click();
+  }
+});
+
+initAge(); initPrices(); render();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>

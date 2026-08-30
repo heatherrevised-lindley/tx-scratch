@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="empty">
+  <h1>No data yet</h1>
+  <p>The first pull fetches the prize file plus one detail page per game to get ticket counts,
+  so it takes a few minutes. After that, daily pulls are a single file and finish in seconds.</p>
+  <form method="post" action="{{ url_for('do_refresh') }}">
+    <button type="submit" {{ 'disabled' if running }}>
+      {{ 'Pulling data…' if running else 'Pull data now' }}
+    </button>
+  </form>
+  <p style="margin-top:18px">You can also run <code>python refresh.py</code> from the terminal and
+  reload this page when it finishes.</p>
+</div>
+{% if running %}<script>setTimeout(() => location.reload(), 5000);</script>{% endif %}
+{% endblock %}

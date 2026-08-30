@@ -1,0 +1,212 @@
+:root {
+  --paper: #e3e1dc;
+  --card: #ffffff;
+  --ink: #16181d;
+  --ink-soft: #5c6068;
+  --rule: #c8c5be;
+  --rule-soft: #e2e0da;
+  --latex: #a9adb2;
+  --good: #1f6f4a;
+  --bad: #9b2c2c;
+  --foil: #b8862b;
+  --focus: #2d5bb9;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+a { color: var(--ink); text-decoration-color: var(--latex); text-underline-offset: 2px; }
+a:hover { text-decoration-color: var(--ink); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.wrap { max-width: 1400px; margin: 0 auto; padding: 28px 20px 64px; }
+
+/* Masthead ---------------------------------------------------------- */
+
+.masthead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 20px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.masthead h1 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.masthead .meta { color: var(--ink-soft); font-size: 13.5px; margin-left: auto; }
+
+.primer {
+  margin: 16px 0 22px;
+  max-width: 74ch;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.primer strong { color: var(--ink); font-weight: 600; }
+
+/* Controls ---------------------------------------------------------- */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 14px 16px;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  margin-bottom: 6px;
+}
+
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 12.5px; color: var(--ink-soft); }
+.field select, .field input[type="number"] {
+  font: inherit;
+  font-size: 14px;
+  padding: 5px 7px;
+  border: 1px solid var(--rule);
+  background: #fff;
+  color: var(--ink);
+  min-width: 108px;
+}
+
+.checks { display: flex; flex-direction: column; gap: 4px; font-size: 13.5px; }
+.checks label { display: flex; align-items: center; gap: 6px; }
+
+button, .btn {
+  font: inherit;
+  font-size: 14px;
+  padding: 6px 14px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: #fff;
+  cursor: pointer;
+}
+button.ghost { background: transparent; color: var(--ink); }
+button:hover { opacity: 0.88; }
+button[disabled] { opacity: 0.45; cursor: default; }
+
+.count { font-size: 13.5px; color: var(--ink-soft); margin: 0 0 14px; }
+
+/* Table ------------------------------------------------------------- */
+
+.scroll { overflow-x: auto; background: var(--card); border: 1px solid var(--rule); }
+
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+
+thead th {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  text-align: right;
+  font-weight: 600;
+  padding: 10px 10px 8px;
+  border-bottom: 1.5px solid var(--ink);
+  white-space: nowrap;
+  z-index: 2;
+}
+thead th:first-child, thead th.left { text-align: left; }
+thead th a { text-decoration: none; }
+thead th .hint { display: block; font-weight: 400; font-size: 11.5px; color: var(--ink-soft); }
+
+tbody td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--rule-soft);
+  text-align: right;
+  white-space: nowrap;
+}
+tbody td.left { text-align: left; white-space: normal; }
+tbody tr:hover { background: #f4f2ee; }
+
+.rank { color: var(--ink-soft); width: 42px; }
+
+.name { font-weight: 560; }
+.sub { display: block; font-size: 12px; color: var(--ink-soft); font-weight: 400; }
+
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 0 5px;
+  border: 1px solid var(--foil);
+  color: var(--foil);
+  margin-left: 6px;
+  vertical-align: 1px;
+}
+.tag.out { border-color: var(--bad); color: var(--bad); }
+
+/* Sold bar encodes how far through the print run a game is. */
+.sold { min-width: 116px; }
+.sold .bar {
+  position: relative;
+  height: 7px;
+  background: var(--rule-soft);
+  margin-top: 4px;
+  overflow: hidden;
+}
+.sold .bar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--latex);
+  display: block;
+}
+.sold.deep .bar i { background: var(--ink); }
+
+.pos { color: var(--good); }
+.neg { color: var(--bad); }
+.dim { color: var(--ink-soft); }
+.strong { font-weight: 620; }
+
+/* Game detail -------------------------------------------------------- */
+
+.back { font-size: 13.5px; display: inline-block; margin-bottom: 12px; }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  border: 1px solid var(--rule);
+  background: var(--card);
+  margin: 18px 0 24px;
+}
+.stat { padding: 12px 14px; border-right: 1px solid var(--rule-soft); }
+.stat:last-child { border-right: 0; }
+.stat .k { font-size: 12.5px; color: var(--ink-soft); }
+.stat .v { font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+
+.panel { background: var(--card); border: 1px solid var(--rule); padding: 16px; margin-bottom: 24px; }
+.panel h2 { margin: 0 0 12px; font-size: 16px; font-weight: 620; }
+.panel p { margin: 0 0 12px; color: var(--ink-soft); font-size: 13.5px; max-width: 74ch; }
+
+.chart-wrap { position: relative; height: 300px; }
+
+.empty { background: var(--card); border: 1px solid var(--rule); padding: 32px; max-width: 62ch; }
+.empty h1 { margin-top: 0; font-size: 22px; }
+.empty p { color: var(--ink-soft); }
+
+footer { margin-top: 34px; font-size: 12.5px; color: var(--ink-soft); max-width: 78ch; }
+footer p { margin: 0 0 8px; }
+
+@media (max-width: 720px) {
+  .wrap { padding: 18px 12px 48px; }
+  .masthead .meta { margin-left: 0; width: 100%; }
+  .controls { gap: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}

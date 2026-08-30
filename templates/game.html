@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}{{ game.game_name }} · Texas scratch-off tracker{% endblock %}
+
+{% block body %}
+<a class="back" href="{{ url_for('index') }}">Back to all games</a>
+
+<header class="masthead">
+  <h1>{{ game.game_name }}</h1>
+  <div class="meta">
+    Game {{ game.game_number }} · ${{ game.ticket_price | int }} ticket
+    {%- if game.start_date %} · started {{ game.start_date }}{% endif %}
+    {%- if game.close_date %} · closes {{ game.close_date }}{% endif %}
+    · claims through {{ snapshot_date }}
+  </div>
+</header>
+
+{% if m %}
+<div class="stats">
+  <div class="stat"><div class="k">Estimated sold</div><div class="v">{{ m.pct_sold | pct(0) }}</div></div>
+  <div class="stat"><div class="k">Tickets left</div><div class="v">{{ m.tickets_left | num }}</div></div>
+  <div class="stat"><div class="k">Prize value left</div><div class="v">{{ m.value_left | money }}</div></div>
+  <div class="stat"><div class="k">Remaining ROI</div><div class="v {{ 'pos' if m.roi_now and m.roi_now > m.roi_start else '' }}">{{ m.roi_now | pct }}</div></div>
+  <div class="stat"><div class="k">ROI at launch</div><div class="v dim">{{ m.roi_start | pct }}</div></div>
+  <div class="stat"><div class="k">Big-prize index</div><div class="v">{{ m.big_index | factor }}</div></div>
+</div>
+
+<div class="panel">
+  <h2>Top prize</h2>
+  <p>{{ m.top_left }} of {{ m.top_printed }} {{ m.top_prize | money }} prizes are unclaimed.
+  At launch the odds of hitting one were {{ m.top_odds_start | odds }}. On the tickets estimated to
+  still be out there they are {{ m.top_odds_now | odds }}
+  {%- if m.top_odds_factor %}, a factor of {{ m.top_odds_factor | factor }}{% endif %}.</p>
+</div>
+
+<div class="panel">
+  <h2>History</h2>
+  <p>One point per stored snapshot. The chart fills in as you keep pulling data.</p>
+  <div class="chart-wrap"><canvas id="hist"></canvas></div>
+</div>
+{% endif %}
+
+<div class="panel">
+  <h2>Prize tiers</h2>
+  <div class="scroll">
+  <table>
+    <thead>
+      <tr>
+        <th class="left">Prize</th>
+        <th>Printed</th>
+        <th>Claimed</th>
+        <th>Left</th>
+        <th class="left">Share left</th>
+        <th>Value left</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for t in tiers %}
+      <tr>
+        <td class="left name">{{ t.amount | money }}</td>
+        <td>{{ t.printed | num }}</td>
+        <td>{{ t.claimed | num }}</td>
+        <td class="strong">{{ t.left | num }}</td>
+        <td class="left sold"><span class="bar"><i style="width: {{ (t.pct_left * 100) | round(1) }}%"></i></span></td>
+        <td>{{ t.value_left | money }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if m %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+fetch("{{ url_for('api_history', game_number=game.game_number, big=big_threshold) }}")
+  .then(r => r.json())
+  .then(d => {
+    const s = d.series || [];
+    const el = document.getElementById('hist');
+    if (!s.length) { el.replaceWith(Object.assign(document.createElement('p'), {textContent: 'No snapshots stored yet.'})); return; }
+    new Chart(el, {
+      type: 'line',
+      data: {
+        labels: s.map(p => p.date),
+        datasets: [
+          { label: 'Percent sold', data: s.map(p => p.pct_sold), yAxisID: 'y', borderColor: '#16181d', backgroundColor: '#16181d', tension: 0.2, pointRadius: 2 },
+          { label: 'Remaining ROI %', data: s.map(p => p.roi_now), yAxisID: 'y', borderColor: '#1f6f4a', backgroundColor: '#1f6f4a', tension: 0.2, pointRadius: 2 },
+          { label: 'Big-prize index', data: s.map(p => p.big_index), yAxisID: 'y2', borderColor: '#b8862b', backgroundColor: '#b8862b', tension: 0.2, pointRadius: 2 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        animation: false,
+        scales: {
+          y: { position: 'left', title: { display: true, text: 'percent' } },
+          y2: { position: 'right', title: { display: true, text: 'index' }, grid: { drawOnChartArea: false } }
+        }
+      }
+    });
+  });
+</script>
+{% endif %}
+{% endblock %}
