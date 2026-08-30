@@ -302,13 +302,12 @@ function detailHTML(g, m){
     <h3>History</h3>${spark(g.H)}
     <h3>Where to buy</h3>
     <p>The official Texas Lottery app is the reliable way to do this on a phone.
-       Its retailer locator lets you filter by game. Look for <b>${g.g}</b>, game
-       ${g.n}.</p>
+       It opens to its home screen, so tap Retailer Locator there and filter for
+       <b>${g.g}</b>, game ${g.n}.</p>
     <p>On the website the locator only works if you navigate in from their menu,
        so this link lands on the scratch ticket section. Tap
        <b>Scratch Tickets Locator</b> there.</p>
-    <p><a class="ext" href="https://play.google.com/store/apps/details?id=com.texas.lottery"
-          target="_blank" rel="noopener">Texas Lottery app</a>
+    <p><a class="ext" href="intent://#Intent;package=com.texas.lottery;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.texas.lottery;end">Open Lottery app</a>
        <a class="ext alt" href="https://www.texaslottery.com/export/sites/lottery/Games/Scratch_Offs/index.html"
           target="_blank" rel="noopener">Lottery website</a></p>
     <p>Either way, this tells you a store is authorized to sell the game, not that
