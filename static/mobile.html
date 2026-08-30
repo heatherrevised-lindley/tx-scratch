@@ -125,8 +125,10 @@ svg.spark{width:100%;height:96px;display:block}
 .detail b{color:var(--ink)}
 a.ext{
   display:inline-block;padding:8px 14px;border:1px solid var(--ink);border-radius:6px;
-  color:var(--ink);text-decoration:none;font-size:13px;font-weight:600;
+  background:var(--ink);color:#fff;text-decoration:none;font-size:13px;font-weight:600;
+  margin:0 8px 8px 0;
 }
+a.ext.alt{background:transparent;color:var(--ink)}
 
 .none{padding:34px 16px;text-align:center;color:var(--soft);font-size:13.5px}
 footer{padding:4px 16px 26px;font-size:11.5px;color:var(--soft);line-height:1.5}
@@ -299,12 +301,18 @@ function detailHTML(g, m){
     <tbody>${tiers}</tbody></table>
     <h3>History</h3>${spark(g.H)}
     <h3>Where to buy</h3>
-    <p>The lottery's locator lists stores carrying a given game. It takes no link
-       parameters, so pick <b>${g.g}</b> (game ${g.n}) from its dropdown after you
-       enter a ZIP. It shows which stores are authorized to sell the game, not
-       which one holds an unclaimed pack.</p>
-    <p><a class="ext" href="https://www.texaslottery.com/opencms/Games/Scratch_Offs/Retailer_Locator.jsp"
-          target="_blank" rel="noopener">Open the scratch ticket locator</a></p>
+    <p>The official Texas Lottery app is the reliable way to do this on a phone.
+       Its retailer locator lets you filter by game. Look for <b>${g.g}</b>, game
+       ${g.n}.</p>
+    <p>On the website the locator only works if you navigate in from their menu,
+       so this link lands on the scratch ticket section. Tap
+       <b>Scratch Tickets Locator</b> there.</p>
+    <p><a class="ext" href="https://play.google.com/store/apps/details?id=com.texas.lottery"
+          target="_blank" rel="noopener">Texas Lottery app</a>
+       <a class="ext alt" href="https://www.texaslottery.com/export/sites/lottery/Games/Scratch_Offs/index.html"
+          target="_blank" rel="noopener">Lottery website</a></p>
+    <p>Either way, this tells you a store is authorized to sell the game, not that
+       it holds an unclaimed pack. That data is not published.</p>
   </div>`;
 }
 
